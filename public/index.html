@@ -3,91 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alien Signal – Latest UFO &amp; Alien News</title>
+
+  <title>AlienSignal — UFO & Alien News Aggregator</title>
+  <meta name="description" content="The latest UFO sightings, alien news, UAP disclosures, and extraterrestrial stories from trusted sources worldwide. Updated every 3 days." />
+  <meta name="keywords" content="UFO, alien, UAP, extraterrestrial, sighting, disclosure, unidentified aerial phenomena, space news" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://alien.workers.dev/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AlienSignal — UFO & Alien News Aggregator" />
+  <meta property="og:description" content="The latest UFO sightings, alien news, UAP disclosures, and extraterrestrial stories from trusted sources worldwide." />
+  <meta property="og:image" content="https://alien.workers.dev/og-image.png" />
+  <meta property="og:url" content="https://alien.workers.dev/" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AlienSignal — UFO & Alien News" />
+  <meta name="twitter:description" content="Latest UFO sightings, UAP disclosures and alien stories, aggregated every 3 days." />
+
+  <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👽</text></svg>" />
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" />
+
   <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- JSON-LD structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "AlienSignal",
+    "description": "UFO and alien news aggregator — links to original sources",
+    "url": "https://alien.workers.dev/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://alien.workers.dev/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 </head>
 <body>
 
-  <!-- Stars background -->
-  <div class="stars" id="stars"></div>
-  <div class="stars2"></div>
-  <div class="stars3"></div>
+  <div class="stars-wrap" aria-hidden="true">
+    <div class="stars s1"></div>
+    <div class="stars s2"></div>
+    <div class="stars s3"></div>
+  </div>
 
-  <!-- Header -->
+  <!-- ── Header ── -->
   <header class="site-header">
-    <div class="header-inner">
-      <div class="logo">
-        <span class="logo-icon">👽</span>
-        <span class="logo-text">ALIEN<span class="logo-accent">SIGNAL</span></span>
-      </div>
-      <div class="header-meta">
-        <span class="status-badge" id="statusBadge">
-          <span class="pulse-dot"></span>
-          <span id="statusText">Scanning…</span>
-        </span>
-        <button class="scan-btn" id="scanBtn" title="Trigger manual scan">
-          ⟳ Scan Now
+    <div class="container header-inner">
+      <a href="/" class="logo" aria-label="AlienSignal home">
+        <span class="logo-icon" aria-hidden="true">👽</span>
+        <span>ALIEN<span class="accent">SIGNAL</span></span>
+      </a>
+
+      <div class="header-right">
+        <div class="live-badge" title="Scanning active">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="statusText">Live</span>
+        </div>
+        <button class="btn-scan" id="scanBtn" aria-label="Trigger manual scan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Scan Now
         </button>
       </div>
     </div>
-    <p class="tagline">Intercepting transmissions from across the universe — updated every 3 days</p>
+
+    <div class="container tagline-row">
+      <p class="tagline">Intercepting transmissions from across the universe &mdash; updated every 3 days</p>
+      <div class="stats-row">
+        <span class="stat"><span class="stat-n" id="totalArticles">—</span> signals</span>
+        <span class="stat-sep" aria-hidden="true">·</span>
+        <span class="stat">last scan <span class="stat-n" id="lastScan">—</span></span>
+        <span class="stat-sep" aria-hidden="true">·</span>
+        <span class="stat">next <span class="stat-n" id="nextScan">—</span></span>
+      </div>
+    </div>
   </header>
 
-  <!-- Stats bar -->
-  <div class="stats-bar">
-    <div class="stats-inner">
-      <div class="stat">
-        <span class="stat-label">Total Signals</span>
-        <span class="stat-value" id="totalArticles">—</span>
+  <!-- ── Search + Filters ── -->
+  <div class="controls-bar">
+    <div class="container controls-inner">
+      <div class="search-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="searchInput" class="search-input" placeholder="Search signals…" aria-label="Search articles" />
       </div>
-      <div class="stat">
-        <span class="stat-label">Last Scan</span>
-        <span class="stat-value" id="lastScan">—</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Next Scan</span>
-        <span class="stat-value" id="nextScan">—</span>
+      <div class="filters" id="filters" role="group" aria-label="Filter by source">
+        <button class="filter-btn active" data-source="all">All</button>
       </div>
     </div>
   </div>
 
-  <!-- Main content -->
-  <main class="main-content">
+  <!-- ── Main ── -->
+  <main class="main-content container" id="main">
 
-    <!-- Loading state -->
-    <div class="loading" id="loading">
-      <div class="ufo-loader">
-        <div class="ufo-body">🛸</div>
-        <div class="beam"></div>
-      </div>
-      <p>Intercepting transmissions…</p>
+    <!-- Skeleton loader -->
+    <div id="skeletons" class="articles-grid" aria-busy="true" aria-label="Loading articles">
+      <!-- JS injects skeletons -->
     </div>
+
+    <!-- Hero + grid -->
+    <div id="heroWrap" style="display:none">
+      <article id="heroCard" class="hero-card" aria-label="Featured article"></article>
+    </div>
+
+    <section id="articlesGrid" class="articles-grid" aria-label="News articles" style="display:none"></section>
 
     <!-- Empty state -->
-    <div class="empty-state" id="emptyState" style="display:none">
-      <div class="empty-icon">🌌</div>
-      <h2>No signals detected yet</h2>
-      <p>The scanner is warming up. Try triggering a manual scan.</p>
-      <button class="scan-btn large" onclick="triggerScan()">⟳ Start Scanning</button>
+    <div id="emptyState" class="empty-state" style="display:none" role="status">
+      <div class="empty-icon" aria-hidden="true">🌌</div>
+      <h2>No signals detected</h2>
+      <p>The scanner is warming up or no results match your search.</p>
+      <button class="btn-scan large" onclick="triggerScan()">
+        Start Scanning
+      </button>
     </div>
 
-    <!-- Articles grid -->
-    <div class="articles-grid" id="articlesGrid"></div>
-
     <!-- Pagination -->
-    <div class="pagination" id="pagination"></div>
+    <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
 
   </main>
 
+  <!-- ── Footer ── -->
   <footer class="site-footer">
-    <p>
-      👽 AlienSignal — Aggregating alien &amp; UFO news from across the web.<br />
-      <small>All articles link to their original sources. Updated every 3 days automatically.</small>
-    </p>
+    <div class="container footer-inner">
+      <p class="footer-brand">👽 <strong>AlienSignal</strong></p>
+      <p class="footer-note">
+        We aggregate headlines and brief excerpts from public news sources under fair use principles.
+        All articles link directly to their <strong>original publishers</strong>.
+        We do not host, reproduce, or claim ownership of any third-party content.
+      </p>
+      <p class="footer-copy">&copy; <span id="year"></span> AlienSignal. All rights belong to their respective sources.</p>
+    </div>
   </footer>
+
+  <div id="toastContainer" aria-live="polite" class="toast-container"></div>
 
   <script src="/js/main.js"></script>
 </body>

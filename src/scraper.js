@@ -115,7 +115,11 @@ function parseRSS(xml, feedName) {
     }
     if (!link) continue;
 
-    const summary = (getTag(itemXml, "description") || getTag(itemXml, "summary")).slice(0, 500);
+    // Fair use: brief teaser only — full article lives at the source
+    const rawSummary = getTag(itemXml, "description") || getTag(itemXml, "summary");
+    const summary = rawSummary.length > 160
+      ? rawSummary.slice(0, 157).replace(/\s+\S*$/, "") + "…"
+      : rawSummary;
     const pubDate = getTag(itemXml, "pubDate") || getTag(itemXml, "published") || getTag(itemXml, "dc:date");
 
     let publishedAt = new Date().toISOString();
