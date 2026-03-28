@@ -12,7 +12,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "alien-signal-db"
-database_id = "YOUR_D1_DATABASE_ID"  # Replace after: wrangler d1 create alien-signal-db
+database_id = "1bc87e2c-22c2-4edd-b855-b56748d3355d"
 
 # Cron trigger: run scraper every 3 days at midnight UTC
 [triggers]
