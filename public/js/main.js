@@ -464,18 +464,30 @@ async function triggerScan() {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("year").textContent = new Date().getFullYear();
-  document.getElementById("scanBtn").addEventListener("click", triggerScan);
-  document.getElementById("searchInput").addEventListener("input", e => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      searchQuery = e.target.value.trim();
-      currentPage = 1; render();
-    }, 240);
-  });
+  const yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  const scanBtn = document.getElementById("scanBtn");
+  if (scanBtn) scanBtn.addEventListener("click", triggerScan);
+
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", e => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        searchQuery = e.target.value.trim();
+        currentPage = 1; render();
+      }, 240);
+    });
+  }
+
   initThemeToggle();
   initBackToTop();
-  loadStatus();
-  loadArticles();
-  setInterval(loadStatus, 30_000);
+
+  // Only run article loading logic on pages that have the grid
+  if (document.getElementById("grid")) {
+    loadStatus();
+    loadArticles();
+    setInterval(loadStatus, 30_000);
+  }
 });
