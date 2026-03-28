@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>AlienSignal — UFO & Alien News</title>
   <meta name="description" content="The latest UFO sightings, alien encounters, UAP disclosures and extraterrestrial stories from around the world. Updated every 3 days." />
   <meta name="keywords" content="UFO, alien, UAP, extraterrestrial, sighting, disclosure, unidentified aerial phenomena, space" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://alien.workers.dev/" />
-
   <meta property="og:type" content="website" />
   <meta property="og:title" content="AlienSignal — UFO & Alien News" />
   <meta property="og:description" content="The latest UFO sightings, alien encounters and UAP disclosures. Updated every 3 days." />
@@ -17,54 +15,79 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AlienSignal — UFO & Alien News" />
   <meta name="twitter:description" content="Latest UFO sightings, UAP disclosures and alien stories." />
-
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👽</text></svg>" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" />
   <link rel="stylesheet" href="/css/style.css" />
-
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"AlienSignal","url":"https://alien.workers.dev/","description":"UFO and alien news from around the world"}
-  </script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"AlienSignal","url":"https://alien.workers.dev/"}</script>
 </head>
 <body>
 
   <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <!-- ── Ticker ── -->
+  <div class="ticker-wrap" id="tickerWrap" style="display:none">
+    <span class="ticker-label">🔴 LIVE</span>
+    <div class="ticker-track">
+      <div class="ticker-inner" id="tickerInner"></div>
+    </div>
+  </div>
 
   <!-- ── Header ── -->
   <header class="site-header">
     <div class="container">
-      <div class="nav">
+      <nav class="nav">
         <a href="/" class="logo">
           <span class="logo-glyph">👽</span>
           ALIEN<span class="logo-hi">SIGNAL</span>
         </a>
         <div class="nav-right">
-          <span class="live-pill">
+          <div class="live-pill">
             <span class="live-dot"></span>
             <span id="statusText">Live</span>
-          </span>
-          <button class="btn-primary" id="scanBtn">
+          </div>
+          <button class="btn-scan" id="scanBtn">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             Scan Now
           </button>
         </div>
-      </div>
+      </nav>
 
-      <div class="hero-banner">
-        <h1 class="hero-headline">
-          They're out there.<br>
-          <span class="hero-hi">We're watching.</span>
-        </h1>
-        <p class="hero-sub">UFO sightings, alien encounters & UAP disclosures — curated every 3 days</p>
-        <div class="hero-stats">
-          <div class="hstat"><span class="hstat-n" id="totalArticles">—</span><span class="hstat-l">Signals</span></div>
-          <div class="hstat-div"></div>
-          <div class="hstat"><span class="hstat-n" id="lastScan">—</span><span class="hstat-l">Last scan</span></div>
-          <div class="hstat-div"></div>
-          <div class="hstat"><span class="hstat-n" id="nextScan">—</span><span class="hstat-l">Next update</span></div>
+      <div class="hero-section">
+        <div class="hero-text">
+          <div class="hero-eyebrow">
+            <span class="eyebrow-dot"></span>
+            INTERCEPTING TRANSMISSIONS
+          </div>
+          <h1 class="hero-headline">
+            They're out there.<br>
+            <span class="hero-hi">We're watching.</span>
+          </h1>
+          <p class="hero-sub">UFO sightings · UAP disclosures · Alien encounters — curated every 3 days</p>
+          <div class="hero-stats">
+            <div class="hstat">
+              <span class="hstat-n" id="totalArticles">—</span>
+              <span class="hstat-l">Signals</span>
+            </div>
+            <div class="hstat-sep"></div>
+            <div class="hstat">
+              <span class="hstat-n" id="lastScan">—</span>
+              <span class="hstat-l">Last scan</span>
+            </div>
+            <div class="hstat-sep"></div>
+            <div class="hstat">
+              <span class="hstat-n" id="nextScan">—</span>
+              <span class="hstat-l">Next update</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-orb" aria-hidden="true">
+          <div class="orb-ring r1"></div>
+          <div class="orb-ring r2"></div>
+          <div class="orb-ring r3"></div>
+          <div class="orb-core">👽</div>
         </div>
       </div>
     </div>
@@ -76,31 +99,26 @@
       <div class="search-wrap">
         <svg class="search-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input id="searchInput" class="search-input" type="search" placeholder="Search signals…" autocomplete="off" />
+        <kbd class="search-kbd" id="searchKbd">/</kbd>
       </div>
-      <div class="filters" id="filters">
-        <button class="chip active" data-source="all">All sources</button>
+      <div class="chips" id="filters">
+        <button class="chip active" data-source="all">All</button>
       </div>
     </div>
   </div>
 
   <!-- ── Content ── -->
   <main class="main container">
-
     <div id="skeletons" class="grid" style="display:none"></div>
-
-    <div id="heroWrap" style="display:none">
-      <div id="heroCard"></div>
-    </div>
-
+    <div id="heroWrap" style="display:none"><div id="heroCard"></div></div>
     <section id="grid" class="grid" style="display:none"></section>
-
     <div id="empty" class="empty" style="display:none">
-      <div class="empty-ico">🌌</div>
+      <div class="empty-glow"></div>
+      <div class="empty-ico">🛸</div>
       <h2>No signals detected</h2>
-      <p>Try scanning or adjusting your search.</p>
-      <button class="btn-primary large" onclick="triggerScan()">Start scanning</button>
+      <p>Adjust your search or trigger a scan.</p>
+      <button class="btn-scan large" onclick="triggerScan()">Start scanning</button>
     </div>
-
     <nav id="pagination" class="pagination"></nav>
   </main>
 
@@ -108,7 +126,7 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <span class="footer-logo">👽 AlienSignal</span>
-      <span class="footer-tagline">Watching the skies since 2025</span>
+      <span class="footer-mid">Watching the skies since 2025</span>
       <span class="footer-copy">&copy; <span id="year"></span></span>
     </div>
   </footer>
