@@ -355,7 +355,6 @@ async function loadStatus() {
     if (!r.ok) return;
     const d = await r.json();
     document.getElementById("totalArticles").textContent = d.total_articles ?? "—";
-    document.getElementById("totalVisitors").textContent = fmtNum(d.total_visits);
     const ran = d.last_scrape?.ran_at;
     document.getElementById("lastScan").textContent = timeAgo(ran);
     document.getElementById("nextScan").textContent  = addDays(ran, 3);
