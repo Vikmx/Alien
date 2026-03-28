@@ -1,330 +1,354 @@
 /* AlienSignal – main.js */
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let currentPage = 1;
-let totalPages  = 1;
+let currentPage  = 1;
 let activeSource = "all";
 let searchQuery  = "";
-let allArticles  = [];   // cache for client-side filter/search
+let allArticles  = [];
 let searchTimer  = null;
 
-const PLACEHOLDERS = ["👽","🛸","🌌","🔭","🌠","🪐","⭐","🌙","🚀","🔬"];
+const ICONS = ["👽","🛸","🌌","🔭","🌠","🪐","⭐","🌙","🚀","🔬","🌍","☄️"];
+
+// ── Canvas starfield ──────────────────────────────────────────────────────────
+(function initCanvas() {
+  const canvas = document.getElementById("bg");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  let W, H, stars = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function mkStars(n) {
+    stars = Array.from({ length: n }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.4 + .3,
+      a: Math.random(),
+      da: (Math.random() - .5) * .008,
+      dy: Math.random() * .12 + .03,
+      color: Math.random() < .08
+        ? (Math.random() < .5 ? "#00f0a0" : "#4db8ff")
+        : "#ffffff",
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      s.a = Math.max(.05, Math.min(1, s.a + s.da));
+      if (s.a <= .05 || s.a >= 1) s.da *= -1;
+      s.y -= s.dy;
+      if (s.y < -2) { s.y = H + 2; s.x = Math.random() * W; }
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = s.a * .75;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  mkStars(220);
+  draw();
+  window.addEventListener("resize", () => { resize(); mkStars(220); });
+})();
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
-function esc(str = "") {
-  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-            .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+function esc(s = "") {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+          .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
-
-function formatDate(iso) {
+function fmtDate(iso) {
   if (!iso) return "";
-  try {
-    return new Date(iso).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" });
-  } catch { return iso; }
+  try { return new Date(iso).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
+  catch { return ""; }
 }
-
 function timeAgo(iso) {
   if (!iso) return "—";
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1)   return "just now";
-  if (m < 60)  return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24)  return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  const d = Math.floor((Date.now() - new Date(iso)) / 60000);
+  if (d < 1) return "just now";
+  if (d < 60) return d + "m ago";
+  if (d < 1440) return Math.floor(d/60) + "h ago";
+  return Math.floor(d/1440) + "d ago";
 }
-
-function addDays(iso, days) {
+function addDays(iso, n) {
   if (!iso) return "—";
   try {
-    const d = new Date(iso);
-    d.setDate(d.getDate() + days);
-    return d.toLocaleDateString("en-US", { month:"short", day:"numeric" });
+    const d = new Date(iso); d.setDate(d.getDate() + n);
+    return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
   } catch { return "—"; }
 }
-
-function showToast(msg, type = "ok") {
+function toast(msg, type = "ok") {
   const el = document.createElement("div");
-  el.className = `toast${type === "error" ? " error" : ""}`;
+  el.className = "toast" + (type === "err" ? " err" : "");
   el.textContent = msg;
-  document.getElementById("toastContainer").appendChild(el);
+  document.getElementById("toasts").appendChild(el);
   setTimeout(() => el.remove(), 4000);
 }
 
 // ── Skeletons ─────────────────────────────────────────────────────────────────
-function showSkeletons(n = 12) {
-  const grid = document.getElementById("skeletons");
-  grid.className = "articles-grid";
-  grid.innerHTML = Array.from({ length: n }, () => `
-    <div class="skeleton" aria-hidden="true">
-      <div class="sk-img"></div>
-      <div class="sk-body">
-        <div class="sk-line w40"></div>
-        <div class="sk-line w80"></div>
-        <div class="sk-line w60"></div>
-        <div class="sk-line w80"></div>
-        <div class="sk-line w40"></div>
+function showSkeletons() {
+  const el = document.getElementById("skeletons");
+  el.innerHTML = Array.from({length:12},()=>`
+    <div class="skel">
+      <div class="sk-h"></div>
+      <div class="sk-b">
+        <div class="sk-l w30"></div>
+        <div class="sk-l w90"></div>
+        <div class="sk-l w75"></div>
+        <div class="sk-l w55"></div>
       </div>
-    </div>
-  `).join("");
-  grid.style.display = "grid";
+    </div>`).join("");
+  el.style.display = "grid";
 }
-
 function hideSkeletons() {
-  const grid = document.getElementById("skeletons");
-  grid.style.display = "none";
-  grid.innerHTML = "";
+  const el = document.getElementById("skeletons");
+  el.style.display = "none";
+  el.innerHTML = "";
 }
 
 // ── Filters ───────────────────────────────────────────────────────────────────
 function buildFilters(articles) {
-  const sources = [...new Set(articles.map(a => a.source).filter(Boolean))].sort();
-  const container = document.getElementById("filters");
-  container.innerHTML = `<button class="filter-btn active" data-source="all">All</button>`;
-  sources.forEach(src => {
-    const btn = document.createElement("button");
-    btn.className = "filter-btn";
-    btn.dataset.source = src;
-    btn.textContent = src.replace("Google News – ", "").replace("Google News — ", "");
-    btn.title = src;
-    container.appendChild(btn);
+  const sources = [...new Set(articles.map(a=>a.source).filter(Boolean))].sort();
+  const box = document.getElementById("filters");
+  box.innerHTML = `<button class="chip active" data-source="all">All sources</button>`;
+  sources.forEach(s => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.dataset.source = s;
+    b.textContent = s.replace(/Google News\s*[–—]\s*/i,"");
+    b.title = s;
+    box.appendChild(b);
   });
-  container.addEventListener("click", e => {
-    const btn = e.target.closest(".filter-btn");
-    if (!btn) return;
-    container.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    activeSource = btn.dataset.source;
+  box.addEventListener("click", e => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    box.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    b.classList.add("active");
+    activeSource = b.dataset.source;
     currentPage = 1;
-    renderFiltered();
+    render();
   });
 }
 
-// ── Filtering / search logic ──────────────────────────────────────────────────
-function getFiltered() {
+// ── Render ────────────────────────────────────────────────────────────────────
+function filtered() {
   let list = allArticles;
-  if (activeSource !== "all") {
-    list = list.filter(a => a.source === activeSource);
-  }
+  if (activeSource !== "all") list = list.filter(a=>a.source===activeSource);
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    list = list.filter(a =>
-      (a.title || "").toLowerCase().includes(q) ||
-      (a.summary || "").toLowerCase().includes(q) ||
-      (a.source || "").toLowerCase().includes(q)
+    list = list.filter(a=>
+      (a.title||"").toLowerCase().includes(q) ||
+      (a.summary||"").toLowerCase().includes(q) ||
+      (a.source||"").toLowerCase().includes(q)
     );
   }
   return list;
 }
 
-function renderFiltered() {
-  const filtered = getFiltered();
-  const perPage  = 12;
-  totalPages     = Math.max(1, Math.ceil(filtered.length / perPage));
-  currentPage    = Math.min(currentPage, totalPages);
-  const start    = (currentPage - 1) * perPage;
-  const page     = filtered.slice(start, start + perPage);
+function render() {
+  const perPage = 12;
+  const list = filtered();
+  const pages = Math.max(1, Math.ceil(list.length / perPage));
+  currentPage = Math.min(currentPage, pages);
+  const slice = list.slice((currentPage-1)*perPage, currentPage*perPage);
 
-  const heroWrap  = document.getElementById("heroWrap");
-  const grid      = document.getElementById("articlesGrid");
-  const emptyEl   = document.getElementById("emptyState");
-  const pagEl     = document.getElementById("pagination");
+  const heroWrap = document.getElementById("heroWrap");
+  const gridEl   = document.getElementById("grid");
+  const emptyEl  = document.getElementById("empty");
+  const pagEl    = document.getElementById("pagination");
 
-  if (filtered.length === 0) {
+  if (!list.length) {
     heroWrap.style.display = "none";
-    grid.style.display = "none";
-    emptyEl.style.display = "block";
+    gridEl.style.display   = "none";
+    emptyEl.style.display  = "block";
     pagEl.innerHTML = "";
     return;
   }
   emptyEl.style.display = "none";
 
-  // Hero = first article of current page when on page 1 and no filter/search
-  const showHero = currentPage === 1 && activeSource === "all" && !searchQuery && page.length > 0;
-  const cards    = showHero ? page.slice(1) : page;
-  const hero     = showHero ? page[0] : null;
+  const showHero = currentPage === 1 && activeSource === "all" && !searchQuery;
+  const hero     = showHero && slice.length ? slice[0] : null;
+  const cards    = hero ? slice.slice(1) : slice;
 
+  // Hero
   if (hero) {
     heroWrap.style.display = "block";
-    document.getElementById("heroCard").outerHTML = renderHero(hero);
+    document.getElementById("heroCard").innerHTML = heroHTML(hero);
   } else {
     heroWrap.style.display = "none";
   }
 
-  grid.innerHTML = "";
+  // Grid
+  gridEl.innerHTML = "";
   cards.forEach((a, i) => {
-    const el = document.createElement("article");
-    el.className = "card";
-    el.style.animationDelay = `${i * 0.04}s`;
-    el.innerHTML = cardInner(a, i);
-    grid.appendChild(el);
+    const div = document.createElement("article");
+    div.className = "card";
+    div.style.animationDelay = i * .04 + "s";
+    div.innerHTML = cardHTML(a, i);
+    gridEl.appendChild(div);
   });
-  grid.style.display = cards.length ? "grid" : "none";
+  gridEl.style.display = cards.length ? "grid" : "none";
 
-  renderPagination(currentPage, totalPages, pagEl);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  renderPag(currentPage, pages, pagEl);
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
-function renderHero(a) {
+// ── Hero HTML ─────────────────────────────────────────────────────────────────
+function heroHTML(a) {
   const img = a.image_url
-    ? `<img class="hero-img" src="${esc(a.image_url)}" alt="" loading="eager" onerror="this.parentNode.innerHTML='<div class=hero-img-placeholder>🛸</div>'">`
-    : `<div class="hero-img-placeholder">🛸</div>`;
-
-  return `<article id="heroCard" class="hero-card">
-    <div class="hero-img-wrap">${img}</div>
-    <div class="hero-body">
-      <div>
-        <div class="hero-label">📡 ${esc(a.source || "Latest Signal")}</div>
-        <h2 class="hero-title">${esc(a.title)}</h2>
-        ${a.summary ? `<p class="hero-summary">${esc(a.summary)}</p>` : ""}
+    ? `<img src="${esc(a.image_url)}" alt="" loading="eager" onerror="this.parentNode.innerHTML='<div class=ha-img-ph>🛸</div>'">`
+    : `<div class="ha-img-ph">🛸</div>`;
+  return `
+    <article class="hero-article">
+      <div class="ha-img">${img}<div class="ha-overlay"></div></div>
+      <div class="ha-body">
+        <div>
+          <div class="ha-tag">📡 ${esc(a.source||"Signal")}</div>
+          <h2 class="ha-title" style="margin-top:.75rem">${esc(a.title)}</h2>
+          ${a.summary?`<p class="ha-summary" style="margin-top:.65rem">${esc(a.summary)}</p>`:""}
+        </div>
+        <div class="ha-foot">
+          <span class="ha-meta">Via <strong>${esc(a.source||"Unknown")}</strong> · ${fmtDate(a.published_at)}</span>
+          <a class="btn-go" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">
+            Read full story →
+          </a>
+        </div>
       </div>
-      <div class="hero-footer">
-        <span class="hero-source">Via <strong>${esc(a.source || "Unknown")}</strong> · ${formatDate(a.published_at)}</span>
-        <a class="btn-read" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">
-          Read Full Article →
-        </a>
-      </div>
-    </div>
-  </article>`;
+    </article>`;
 }
 
-// ── Card ──────────────────────────────────────────────────────────────────────
-function cardInner(a, idx) {
-  const icon = PLACEHOLDERS[idx % PLACEHOLDERS.length];
+// ── Card HTML ─────────────────────────────────────────────────────────────────
+function cardHTML(a, i) {
+  const icon = ICONS[i % ICONS.length];
   const img  = a.image_url
-    ? `<div class="card-img-wrap"><img class="card-img" src="${esc(a.image_url)}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<div class=card-img-placeholder>${icon}</div>'"></div>`
-    : `<div class="card-img-wrap"><div class="card-img-placeholder">${icon}</div></div>`;
-
+    ? `<div class="c-img"><img src="${esc(a.image_url)}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<div class=c-img-ph>${icon}</div>'"></div>`
+    : `<div class="c-img"><div class="c-img-ph">${icon}</div></div>`;
   return `${img}
-    <div class="card-body">
-      <span class="card-source">${esc(a.source || "Unknown")}</span>
-      <h3 class="card-title">${esc(a.title)}</h3>
-      ${a.summary ? `<p class="card-summary">${esc(a.summary)}</p>` : ""}
-      <div class="card-footer">
-        <span class="card-date">${formatDate(a.published_at)}</span>
-        <a class="card-link" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">
-          Read at source →
+    <div class="c-body">
+      <span class="c-src">${esc(a.source||"Unknown")}</span>
+      <h3 class="c-title">${esc(a.title)}</h3>
+      ${a.summary?`<p class="c-summary">${esc(a.summary)}</p>`:""}
+      <div class="c-foot">
+        <span class="c-date">${fmtDate(a.published_at)}</span>
+        <a class="c-link" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">
+          Read story →
         </a>
       </div>
     </div>`;
 }
 
 // ── Pagination ────────────────────────────────────────────────────────────────
-function renderPagination(page, pages, container) {
-  container.innerHTML = "";
+function renderPag(page, pages, el) {
+  el.innerHTML = "";
   if (pages <= 1) return;
 
-  const prev = document.createElement("button");
-  prev.className = "page-btn";
-  prev.textContent = "← Prev";
-  prev.disabled = page <= 1;
-  prev.onclick = () => { currentPage = page - 1; renderFiltered(); };
-  container.appendChild(prev);
+  const prev = btn("← Prev", page<=1, ()=>{ currentPage=page-1; render(); });
+  el.appendChild(prev);
 
   const range = [];
-  for (let i = Math.max(1, page - 2); i <= Math.min(pages, page + 2); i++) range.push(i);
+  for (let i=Math.max(1,page-2); i<=Math.min(pages,page+2); i++) range.push(i);
 
-  if (range[0] > 1) {
-    container.appendChild(makePageBtn(1, page));
-    if (range[0] > 2) container.appendChild(Object.assign(document.createElement("span"), { className:"page-ellipsis", textContent:"…" }));
+  if (range[0]>1) {
+    el.appendChild(pgBtn(1,page));
+    if (range[0]>2) el.appendChild(dots());
   }
-  range.forEach(p => container.appendChild(makePageBtn(p, page)));
-  if (range.at(-1) < pages) {
-    if (range.at(-1) < pages - 1) container.appendChild(Object.assign(document.createElement("span"), { className:"page-ellipsis", textContent:"…" }));
-    container.appendChild(makePageBtn(pages, page));
+  range.forEach(p=>el.appendChild(pgBtn(p,page)));
+  if (range.at(-1)<pages) {
+    if (range.at(-1)<pages-1) el.appendChild(dots());
+    el.appendChild(pgBtn(pages,page));
   }
 
-  const next = document.createElement("button");
-  next.className = "page-btn";
-  next.textContent = "Next →";
-  next.disabled = page >= pages;
-  next.onclick = () => { currentPage = page + 1; renderFiltered(); };
-  container.appendChild(next);
+  el.appendChild(btn("Next →", page>=pages, ()=>{ currentPage=page+1; render(); }));
+}
+function btn(label, disabled, fn) {
+  const b = document.createElement("button");
+  b.className="pg"; b.textContent=label; b.disabled=disabled;
+  b.onclick=fn; return b;
+}
+function pgBtn(p, active) {
+  const b = document.createElement("button");
+  b.className = "pg" + (p===active?" on":"");
+  b.textContent = p;
+  b.onclick = ()=>{ currentPage=p; render(); };
+  return b;
+}
+function dots() {
+  const s = document.createElement("span");
+  s.className="pg-dots"; s.textContent="…"; return s;
 }
 
-function makePageBtn(p, active) {
-  const btn = document.createElement("button");
-  btn.className = `page-btn${p === active ? " active" : ""}`;
-  btn.textContent = p;
-  btn.onclick = () => { currentPage = p; renderFiltered(); };
-  return btn;
-}
-
-// ── Data loading ──────────────────────────────────────────────────────────────
+// ── Load data ─────────────────────────────────────────────────────────────────
 async function loadArticles() {
-  showSkeletons(12);
-  document.getElementById("heroWrap").style.display = "none";
-  document.getElementById("articlesGrid").style.display = "none";
-  document.getElementById("emptyState").style.display = "none";
-  document.getElementById("pagination").innerHTML = "";
-
+  showSkeletons();
+  ["heroWrap","grid","empty","pagination"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.style.display="none";
+  });
   try {
-    // Fetch all articles for client-side filtering (up to 200)
     const res = await fetch("/api/articles?page=1&per_page=200");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-
     allArticles = data.articles || [];
     hideSkeletons();
     buildFilters(allArticles);
-    renderFiltered();
-  } catch (err) {
+    render();
+  } catch (e) {
     hideSkeletons();
-    document.getElementById("emptyState").style.display = "block";
-    showToast("Failed to load signals: " + err.message, "error");
+    document.getElementById("empty").style.display = "block";
+    toast("Failed to load: " + e.message, "err");
   }
 }
 
 async function loadStatus() {
   try {
-    const res = await fetch("/api/status");
-    if (!res.ok) return;
-    const data = await res.json();
-
-    document.getElementById("totalArticles").textContent = data.total_articles ?? "—";
-
-    const lastRan = data.last_scrape?.ran_at;
-    document.getElementById("lastScan").textContent = timeAgo(lastRan);
-    document.getElementById("nextScan").textContent  = addDays(lastRan, 3);
+    const r = await fetch("/api/status");
+    if (!r.ok) return;
+    const d = await r.json();
+    document.getElementById("totalArticles").textContent = d.total_articles ?? "—";
+    const ran = d.last_scrape?.ran_at;
+    document.getElementById("lastScan").textContent = timeAgo(ran);
+    document.getElementById("nextScan").textContent  = addDays(ran, 3);
     document.getElementById("statusText").textContent =
-      !lastRan ? "Initializing" : data.last_scrape?.status === "ok" ? "Live" : "Error";
-  } catch {
-    document.getElementById("statusText").textContent = "Offline";
-  }
+      !ran ? "Warming up" : d.last_scrape?.status==="ok" ? "Live" : "Check";
+  } catch { document.getElementById("statusText").textContent = "Offline"; }
 }
 
 // ── Manual scan ───────────────────────────────────────────────────────────────
 async function triggerScan() {
-  const btn = document.getElementById("scanBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Scanning…"; }
-  showToast("Initiating deep space scan…");
+  const b = document.getElementById("scanBtn");
+  if (b) b.disabled = true;
+  toast("Initiating scan…");
   try {
-    const res = await fetch("/api/scrape", { method: "POST" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    showToast("Scan complete — refreshing signals!");
+    await fetch("/api/scrape",{method:"POST"});
+    toast("Scan complete!");
     await Promise.all([loadStatus(), loadArticles()]);
-  } catch (err) {
-    showToast("Scan failed: " + err.message, "error");
+  } catch(e) {
+    toast("Scan failed: "+e.message,"err");
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Scan Now`; }
+    if (b) b.disabled = false;
   }
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("year").textContent = new Date().getFullYear();
 
   document.getElementById("scanBtn").addEventListener("click", triggerScan);
 
-  // Search with debounce
   document.getElementById("searchInput").addEventListener("input", e => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
       searchQuery = e.target.value.trim();
       currentPage = 1;
-      renderFiltered();
-    }, 280);
+      render();
+    }, 250);
   });
 
   loadStatus();
