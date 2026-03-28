@@ -404,6 +404,11 @@ button{font-family:inherit;cursor:pointer}
 .footer-logo{font-weight:600;color:var(--text);font-size:.95rem}
 .footer-mid{font-size:.8rem;color:var(--t3)}
 .footer-copy{font-size:.75rem;color:var(--t3)}
+.footer-legal{
+  font-size:.72rem;color:var(--t3);line-height:1.65;
+  border-top:1px solid var(--bd);margin-top:1rem;padding-top:1rem;
+  max-width:680px;
+}
 
 /* ── Scroll ── */
 ::-webkit-scrollbar{width:4px}
