@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — AlienSignal</title>
+  <meta name="description" content="Privacy Policy for AlienSignal, the UFO and alien news aggregator." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://the-alien.net/privacy.html" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👽</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .prose{max-width:720px;margin:0 auto;padding:3rem 1.5rem 6rem}
+    .prose h1{font-family:'Orbitron',sans-serif;font-size:clamp(1.4rem,3vw,2rem);color:var(--green);margin-bottom:.4rem}
+    .prose .updated{font-size:.8rem;color:var(--t3);margin-bottom:2.5rem}
+    .prose h2{font-family:'Orbitron',sans-serif;font-size:.95rem;color:var(--blue);letter-spacing:.06em;text-transform:uppercase;margin:2.2rem 0 .75rem;padding-bottom:.5rem;border-bottom:1px solid var(--bd)}
+    .prose p,.prose li{font-size:.95rem;color:var(--t2);line-height:1.8;margin-bottom:.75rem}
+    .prose ul{padding-left:1.25rem}
+    .prose li{margin-bottom:.4rem}
+    .prose a{color:var(--blue);text-decoration:underline}
+    .prose strong{color:var(--text)}
+    .back{display:inline-flex;align-items:center;gap:.4rem;color:var(--t2);font-size:.85rem;margin-bottom:2rem;transition:color .2s}
+    .back:hover{color:var(--green)}
+  </style>
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container">
+      <nav class="nav">
+        <a href="/" class="logo">
+          <span class="logo-glyph">👽</span>
+          ALIEN<span class="logo-hi">SIGNAL</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="position:relative;z-index:10">
+    <div class="prose">
+      <a href="/" class="back">← Back to AlienSignal</a>
+
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: March 28, 2025</p>
+
+      <p>AlienSignal ("we", "our", or "us") operates <strong>the-alien.net</strong>. This Privacy Policy explains what information we collect, how we use it, and your rights regarding that information.</p>
+
+      <h2>Information We Collect</h2>
+      <p>We collect minimal information to operate the site:</p>
+      <ul>
+        <li><strong>Usage data:</strong> We count page visits in aggregate (no personal data stored — just a daily counter per day).</li>
+        <li><strong>Log data:</strong> Cloudflare, our hosting provider, may collect standard web server logs including IP addresses, browser type, and pages visited. These logs are subject to <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare's Privacy Policy</a>.</li>
+      </ul>
+      <p>We do <strong>not</strong> collect names, email addresses, or any personally identifiable information unless you contact us directly.</p>
+
+      <h2>Cookies</h2>
+      <p>AlienSignal does not use cookies or tracking technologies of its own. If we add third-party advertising (such as Google AdSense) in the future, those services may use cookies and this policy will be updated accordingly.</p>
+
+      <h2>Third-Party Links</h2>
+      <p>Every article on AlienSignal links to an external publisher's website. We are not responsible for the privacy practices of those external sites. We encourage you to review their privacy policies before submitting any personal information.</p>
+
+      <h2>Third-Party Services</h2>
+      <ul>
+        <li><strong>Cloudflare Workers &amp; D1:</strong> Our infrastructure provider. See <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare Privacy Policy</a>.</li>
+        <li><strong>Google Fonts:</strong> Used to load typography. Google may log font requests. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>.</li>
+        <li><strong>PayPal:</strong> Optional donation link. PayPal handles all payment data. See <a href="https://www.paypal.com/us/legalhub/privacy-full" target="_blank" rel="noopener noreferrer">PayPal Privacy Policy</a>.</li>
+      </ul>
+
+      <h2>Children's Privacy</h2>
+      <p>AlienSignal is not directed at children under 13. We do not knowingly collect personal information from minors.</p>
+
+      <h2>Your Rights</h2>
+      <p>Since we do not collect personal data, there is nothing to access, modify, or delete. If you have questions about data processed by our infrastructure providers (Cloudflare), please contact them directly.</p>
+
+      <h2>Changes to This Policy</h2>
+      <p>We may update this Privacy Policy from time to time. Changes will be reflected by the "Last updated" date at the top of this page.</p>
+
+      <h2>Contact</h2>
+      <p>For any questions about this Privacy Policy, contact us at: <a href="mailto:contact@the-alien.net">contact@the-alien.net</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-logo">👽 AlienSignal</span>
+      <span class="footer-mid">Watching the skies since 2025</span>
+      <span class="footer-copy">&copy; <span id="year"></span></span>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent=new Date().getFullYear()</script>
+  <script src="/js/main.js" defer></script>
+</body>
+</html>
