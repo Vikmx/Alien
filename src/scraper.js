@@ -54,14 +54,15 @@ function isRelevant(title = "", summary = "") {
 
 function stripHtml(str = "") {
   return str
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-    .replace(/<[^>]+>/g, "")
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1") // unwrap CDATA
+    .replace(/<[^>]*>/g, "")                        // strip real tags
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">")   // decode encoded brackets
+    .replace(/<[^>]*>/g, "")                        // strip now-decoded tags
     .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
