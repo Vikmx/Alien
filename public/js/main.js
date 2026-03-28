@@ -116,6 +116,12 @@ function isNew(iso) {
   if (!iso) return false;
   return (Date.now() - new Date(iso)) < 86400000 * 2; // last 48h
 }
+function fmtNum(n) {
+  if (!n && n !== 0) return "—";
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  return n.toString();
+}
 function toast(msg, type = "ok") {
   const el = document.createElement("div");
   el.className = "toast" + (type === "err" ? " err" : "");
@@ -338,6 +344,7 @@ async function loadStatus() {
     if (!r.ok) return;
     const d = await r.json();
     document.getElementById("totalArticles").textContent = d.total_articles ?? "—";
+    document.getElementById("totalVisitors").textContent = fmtNum(d.total_visits);
     const ran = d.last_scrape?.ran_at;
     document.getElementById("lastScan").textContent = timeAgo(ran);
     document.getElementById("nextScan").textContent  = addDays(ran, 3);

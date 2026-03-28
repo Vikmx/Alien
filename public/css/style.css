@@ -391,6 +391,29 @@ button{font-family:inherit;cursor:pointer}
 .toast.err{border-color:#f87171;color:#f87171}
 @keyframes tin{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 
+/* ── Footer CTA ── */
+.footer-cta{
+  display:flex;align-items:center;gap:.75rem;
+  padding:1.75rem 0;border-bottom:1px solid var(--bd);
+  flex-wrap:wrap;
+}
+.footer-btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.48rem 1.1rem;border-radius:var(--r3);
+  font-size:.82rem;font-weight:600;
+  transition:opacity .2s,box-shadow .2s,transform .15s;
+  text-decoration:none;
+}
+.footer-btn:hover{opacity:.88;transform:translateY(-1px)}
+.footer-btn--contact{
+  background:var(--blue-d);border:1px solid rgba(94,184,255,.3);color:var(--blue);
+}
+.footer-btn--contact:hover{box-shadow:0 0 16px rgba(94,184,255,.2)}
+.footer-btn--paypal{
+  background:#003087;color:#fff;border:1px solid #0070ba;
+}
+.footer-btn--paypal:hover{box-shadow:0 0 16px rgba(0,112,186,.35)}
+
 /* ── Footer ── */
 .site-footer{
   position:relative;z-index:10;
