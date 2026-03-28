@@ -93,16 +93,27 @@ export async function getLastScrape(db) {
 /** Increment today's visit counter and return total all-time visits. */
 export async function trackVisit(db) {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  // Ensure table exists even if initDB ran before this column was added
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS visits (
+      id    INTEGER PRIMARY KEY AUTOINCREMENT,
+      day   TEXT    NOT NULL,
+      count INTEGER NOT NULL DEFAULT 0,
+      UNIQUE(day)
+    )
+  `).run();
   await db
     .prepare(`INSERT INTO visits (day, count) VALUES (?, 1)
               ON CONFLICT(day) DO UPDATE SET count = count + 1`)
     .bind(today)
     .run();
-  const row = await db.prepare(`SELECT SUM(count) AS total FROM visits`).first();
-  return row?.total ?? 0;
 }
 
 export async function getTotalVisits(db) {
-  const row = await db.prepare(`SELECT SUM(count) AS total FROM visits`).first();
-  return row?.total ?? 0;
+  try {
+    const row = await db.prepare(`SELECT SUM(count) AS total FROM visits`).first();
+    return row?.total ?? 0;
+  } catch {
+    return 0;
+  }
 }

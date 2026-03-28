@@ -13,7 +13,6 @@ async function ensureDB(db) {
   await initDB(db);
   dbReady = true;
 }
-
 export default {
   async fetch(request, env) {
     await ensureDB(env.DB);
