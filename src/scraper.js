@@ -1,6 +1,6 @@
 /**
  * RSS scraper for alien/UFO news.
- * Uses the native fetch + DOMParser available in Cloudflare Workers.
+ * Pure regex-based XML parsing — no DOMParser (not available in Workers).
  */
 
 const RSS_FEEDS = [
@@ -44,7 +44,7 @@ const ALIEN_KEYWORDS = [
   "alien", "ufo", "uap", "extraterrestrial", "unidentified", "flying saucer",
   "martian", "area 51", "roswell", "abduction", "crop circle", "disclosure",
   "sighting", "interstellar", "anomaly", "non-human", "astrobiology",
-  "unexplained", "intelligence", "close encounter",
+  "unexplained", "close encounter",
 ];
 
 function isRelevant(title = "", summary = "") {
@@ -53,91 +53,116 @@ function isRelevant(title = "", summary = "") {
 }
 
 function stripHtml(str = "") {
-  return str.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+  return str
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .trim();
 }
 
-function getText(el, tag) {
-  const node = el.querySelector(tag);
-  return node ? stripHtml(node.textContent || "") : "";
+/** Extract text content between <tag>…</tag>, handling CDATA. */
+function getTag(xml, tag) {
+  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
+  const m = xml.match(re);
+  return m ? stripHtml(m[1]) : "";
 }
 
+/** Try several patterns to find an image URL inside an <item> block. */
 function extractImage(itemXml) {
-  // Try media:thumbnail
-  const thumbMatch = itemXml.match(/<media:thumbnail[^>]+url="([^"]+)"/);
-  if (thumbMatch) return thumbMatch[1];
+  // media:thumbnail url="..."
+  let m = itemXml.match(/<media:thumbnail[^>]+url="([^"]+)"/i);
+  if (m) return m[1];
 
-  // Try media:content image
-  const mediaMatch = itemXml.match(/<media:content[^>]+url="([^"]+)"[^>]+type="image/);
-  if (mediaMatch) return mediaMatch[1];
+  // media:content url="..." type="image/..."
+  m = itemXml.match(/<media:content[^>]+url="([^"]+)"[^>]*type="image[^"]*"/i);
+  if (m) return m[1];
 
-  // Try enclosure
-  const encMatch = itemXml.match(/<enclosure[^>]+url="([^"]+)"[^>]+type="image/);
-  if (encMatch) return encMatch[1];
+  // enclosure url="..." type="image/..."
+  m = itemXml.match(/<enclosure[^>]+type="image[^"]*"[^>]+url="([^"]+)"/i);
+  if (m) return m[1];
+  m = itemXml.match(/<enclosure[^>]+url="([^"]+)"[^>]*type="image[^"]*"/i);
+  if (m) return m[1];
 
-  // Try og:image in description
-  const imgMatch = itemXml.match(/<img[^>]+src="([^"]+)"/);
-  if (imgMatch) return imgMatch[1];
+  // first <img src="..."> inside description/content
+  m = itemXml.match(/<img[^>]+src="([^"]+)"/i);
+  if (m) return m[1];
 
   return null;
 }
 
-function parseRSS(xmlText, feedName) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xmlText, "text/xml");
-  const items = Array.from(doc.querySelectorAll("item"));
+function parseRSS(xml, feedName) {
+  // Split on <item> boundaries
+  const itemBlocks = xml.split(/<item[\s>]/i).slice(1);
+  const articles = [];
 
-  return items.map((item) => {
-    // Get raw XML of item for image extraction
-    const itemXml = item.outerHTML || "";
+  for (const block of itemBlocks) {
+    // Grab the closing </item> portion only
+    const itemXml = block.split("</item>")[0];
 
-    const title = getText(item, "title");
-    const link = getText(item, "link") || item.querySelector("link")?.getAttribute("href") || "";
-    const summary = stripHtml(getText(item, "description") || getText(item, "summary")).slice(0, 500);
-    const pubDate = getText(item, "pubDate") || getText(item, "published") || getText(item, "dc\\:date");
+    const title = getTag(itemXml, "title");
+    if (!title) continue;
+
+    // <link> in RSS can be plain text or a self-closing tag; try both
+    let link = getTag(itemXml, "link");
+    if (!link) {
+      const m = itemXml.match(/<link[^>]+href="([^"]+)"/i);
+      if (m) link = m[1];
+    }
+    if (!link) continue;
+
+    const summary = (getTag(itemXml, "description") || getTag(itemXml, "summary")).slice(0, 500);
+    const pubDate = getTag(itemXml, "pubDate") || getTag(itemXml, "published") || getTag(itemXml, "dc:date");
 
     let publishedAt = new Date().toISOString();
     if (pubDate) {
       try { publishedAt = new Date(pubDate).toISOString(); } catch { /* keep default */ }
     }
 
-    return {
+    articles.push({
       title,
       link,
       summary,
       source: feedName,
       image_url: extractImage(itemXml),
       published_at: publishedAt,
-    };
-  }).filter((a) => a.title && a.link);
+    });
+  }
+
+  return articles;
 }
 
 export async function fetchAllFeeds() {
   const articles = [];
   const seenLinks = new Set();
 
-  for (const feed of RSS_FEEDS) {
-    try {
-      const res = await fetch(feed.url, {
-        headers: { "User-Agent": "AlienSignal/1.0 RSS Reader" },
-        cf: { cacheTtl: 3600 },
-      });
-      if (!res.ok) continue;
+  await Promise.allSettled(
+    RSS_FEEDS.map(async (feed) => {
+      try {
+        const res = await fetch(feed.url, {
+          headers: { "User-Agent": "AlienSignal/1.0 RSS Reader" },
+          cf: { cacheTtl: 3600 },
+        });
+        if (!res.ok) return;
 
-      const xml = await res.text();
-      const items = parseRSS(xml, feed.name);
+        const xml = await res.text();
+        const items = parseRSS(xml, feed.name);
 
-      for (const item of items) {
-        if (seenLinks.has(item.link)) continue;
-        if (feed.filterByKeywords && !isRelevant(item.title, item.summary)) continue;
-        seenLinks.add(item.link);
-        articles.push(item);
+        for (const item of items) {
+          if (seenLinks.has(item.link)) continue;
+          if (feed.filterByKeywords && !isRelevant(item.title, item.summary)) continue;
+          seenLinks.add(item.link);
+          articles.push(item);
+        }
+      } catch (err) {
+        console.error(`Feed error [${feed.name}]:`, err.message);
       }
-    } catch (err) {
-      console.error(`Feed error [${feed.name}]:`, err.message);
-    }
-  }
+    })
+  );
 
   return articles;
 }
