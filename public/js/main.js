@@ -231,8 +231,10 @@ function render() {
   emptyEl.style.display = "none";
 
   const showHero = currentPage===1 && activeSource==="all" && !searchQuery;
-  const hero = showHero ? slice[0] : null;
-  const cards = hero ? slice.slice(1) : slice;
+  // Hero must have an image — skip until we find one
+  const heroIdx = showHero ? slice.findIndex(a => a.image_url) : -1;
+  const hero  = heroIdx >= 0 ? slice[heroIdx] : null;
+  const cards = hero ? slice.filter((_, i) => i !== heroIdx) : slice;
 
   if (hero) {
     heroWrap.style.display = "block";
