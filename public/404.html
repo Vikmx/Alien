@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-T724KNCP');</script>
+  <!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Signal Lost | AlienSignal</title>
+  <meta name="description" content="This frequency has gone dark. Page not found." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👽</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .nf-wrap{
+      position:relative;z-index:10;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:70vh;text-align:center;padding:4rem 1.5rem;
+    }
+    .nf-glow{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);
+      width:400px;height:400px;border-radius:50%;
+      background:radial-gradient(circle,rgba(0,255,170,.06) 0%,transparent 70%);
+      pointer-events:none;
+    }
+    .nf-code{
+      font-family:'Orbitron',sans-serif;
+      font-size:clamp(5rem,15vw,9rem);font-weight:900;
+      color:transparent;
+      background:linear-gradient(135deg,var(--blue),var(--green));
+      -webkit-background-clip:text;background-clip:text;
+      line-height:1;margin-bottom:.5rem;
+      filter:drop-shadow(0 0 40px rgba(0,255,170,.2));
+    }
+    .nf-icon{font-size:3.5rem;margin-bottom:1.25rem;display:block;
+      filter:drop-shadow(0 0 20px rgba(0,255,170,.4));animation:float 4s ease-in-out infinite}
+    .nf-title{
+      font-family:'Orbitron',sans-serif;font-size:clamp(1rem,3vw,1.6rem);
+      font-weight:700;color:var(--text);margin-bottom:.75rem;
+    }
+    .nf-sub{font-size:.95rem;color:var(--t2);max-width:440px;line-height:1.7;margin-bottom:2rem}
+    .nf-ring{
+      position:absolute;width:300px;height:300px;border-radius:50%;
+      border:1px solid rgba(0,255,170,.08);top:50%;left:50%;
+      transform:translate(-50%,-50%);pointer-events:none;
+    }
+    .nf-ring2{width:450px;height:450px;border-color:rgba(94,184,255,.05)}
+  </style>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T724KNCP"
+  height="0" width="0" style="display:none;visibility:hidden" title="GTM"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container">
+      <nav class="nav">
+        <a href="/" class="logo" aria-label="AlienSignal — Home">
+          <span class="logo-glyph" aria-hidden="true">👽</span>
+          ALIEN<span class="logo-hi">SIGNAL</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="nf-wrap">
+      <div class="nf-glow" aria-hidden="true"></div>
+      <div class="nf-ring" aria-hidden="true"></div>
+      <div class="nf-ring nf-ring2" aria-hidden="true"></div>
+      <div class="nf-code" aria-label="Error 404">404</div>
+      <span class="nf-icon" aria-hidden="true">🛸</span>
+      <h1 class="nf-title">Signal Lost</h1>
+      <p class="nf-sub">This frequency has gone dark. The page you're looking for has been classified, abducted, or never existed.</p>
+      <a href="/" class="btn-scan large" aria-label="Return to AlienSignal homepage">← Return to base</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-logo">👽 AlienSignal</span>
+      <span class="footer-mid">Watching the skies since 2025</span>
+      <span class="footer-copy">&copy; <span id="year"></span> AlienSignal · the-alien.net</span>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="/js/main.js" defer></script>
+</body>
+</html>

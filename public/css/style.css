@@ -490,6 +490,79 @@ button{font-family:inherit;cursor:pointer}
   max-width:680px;
 }
 
+/* ── Theme toggle button ── */
+.btn-theme{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:var(--r3);
+  background:var(--s2);border:1px solid var(--bd2);color:var(--t2);
+  transition:all .2s;
+}
+.btn-theme:hover{border-color:rgba(94,184,255,.4);color:var(--blue);background:var(--blue-d)}
+
+/* ── Back to top ── */
+.back-top{
+  position:fixed;bottom:1.5rem;left:1.5rem;z-index:9998;
+  width:42px;height:42px;border-radius:50%;
+  background:var(--s1);border:1px solid var(--bd2);color:var(--t2);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transform:translateY(10px);
+  transition:opacity .25s,transform .25s,box-shadow .2s,border-color .2s;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+}
+.back-top.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
+.back-top:hover{border-color:rgba(0,255,170,.4);color:var(--green);box-shadow:0 4px 24px rgba(0,255,170,.15)}
+
+/* ── Article highlight (from ?article= share URL) ── */
+.card.highlighted{
+  border-color:rgba(0,255,170,.5) !important;
+  box-shadow:0 0 0 2px rgba(0,255,170,.15),0 0 40px rgba(0,255,170,.12) !important;
+  animation:highlight-pulse 2s ease 3;
+}
+@keyframes highlight-pulse{
+  0%,100%{box-shadow:0 0 0 2px rgba(0,255,170,.15),0 0 40px rgba(0,255,170,.12)}
+  50%{box-shadow:0 0 0 3px rgba(0,255,170,.3),0 0 60px rgba(0,255,170,.2)}
+}
+
+/* ── Light mode ── */
+html.light{
+  --bg:#eef2f8;
+  --s1:#e4eaf4;
+  --s2:#d8e0ee;
+  --bd:rgba(0,30,80,.1);
+  --bd2:rgba(0,30,80,.18);
+  --green:#007744;
+  --green-d:rgba(0,119,68,.08);
+  --green-g:rgba(0,119,68,.12);
+  --blue:#1155aa;
+  --blue-d:rgba(17,85,170,.08);
+  --purple:#6622bb;
+  --amber:#aa5500;
+  --text:#0a0f1e;
+  --t2:#2a4060;
+  --t3:#5a7090;
+}
+html.light body{background:var(--bg)}
+html.light #bg{opacity:.05}
+html.light .nebula{
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 15%,rgba(80,130,220,.12) 0%,transparent 60%),
+    radial-gradient(ellipse 55% 65% at 8% 75%,rgba(0,140,90,.08) 0%,transparent 55%);
+}
+html.light .controls-bar{background:rgba(238,242,248,.92)}
+html.light .logo{text-shadow:none}
+html.light .logo-hi{text-shadow:none}
+html.light .hero-hi{text-shadow:none}
+html.light .orb-core{filter:drop-shadow(0 0 20px rgba(0,119,68,.3))}
+html.light .btn-scan{background:linear-gradient(135deg,#007744,#00994d);box-shadow:0 0 14px rgba(0,119,68,.2)}
+html.light .btn-story{background:linear-gradient(135deg,#007744,#00994d);box-shadow:none}
+html.light .btn-donate{background:linear-gradient(135deg,#0070ba,#003087)}
+html.light .support-banner{background:linear-gradient(135deg,rgba(200,160,60,.08) 0%,rgba(0,112,186,.08) 100%)}
+html.light .toast{background:rgba(228,234,244,.97);color:var(--green)}
+html.light .c-link{color:var(--blue);border-color:rgba(17,85,170,.25)}
+html.light .c-link:hover{background:var(--blue-d)}
+html.light .back-top{background:var(--s1);color:var(--t2)}
+html.light .btn-theme{background:var(--s2);color:var(--t2)}
+
 /* ── Scroll ── */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}

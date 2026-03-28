@@ -25,12 +25,14 @@
   <meta property="og:title" content="AlienSignal — UFO & Alien News" />
   <meta property="og:description" content="The latest UFO sightings, alien encounters and UAP disclosures. Updated every 3 days." />
   <meta property="og:url" content="https://www.the-alien.net/" />
+  <meta property="og:image" content="https://www.the-alien.net/img/og.svg" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AlienSignal — UFO & Alien News" />
   <meta name="twitter:description" content="Latest UFO sightings, UAP disclosures and alien stories from around the world." />
+  <meta name="twitter:image" content="https://www.the-alien.net/img/og.svg" />
   <meta name="twitter:site" content="@aliensignal" />
 
   <!-- Favicon -->
@@ -42,6 +44,9 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@700;900&display=swap" />
 
   <link rel="stylesheet" href="/css/style.css" />
+
+  <!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -94,6 +99,9 @@
             <span class="live-dot" aria-hidden="true"></span>
             <span id="statusText">Live</span>
           </div>
+          <button class="btn-theme" id="themeBtn" aria-label="Toggle light/dark mode" title="Toggle theme">
+            <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
           <button class="btn-scan" id="scanBtn" aria-label="Trigger manual news scan">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
             Scan Now
@@ -208,6 +216,11 @@
       </p>
     </div>
   </footer>
+
+  <!-- Back to top -->
+  <button class="back-top" id="backTop" aria-label="Scroll to top" title="Back to top">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
 
   <div id="toasts" aria-live="polite" aria-atomic="true" class="toasts"></div>
   <script src="/js/main.js" defer></script>

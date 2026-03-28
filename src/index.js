@@ -15,12 +15,12 @@ const SECURITY_HEADERS = {
   "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
   "Content-Security-Policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://pagead2.googlesyndication.com https://partner.googleadservices.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: http:",
     "connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com",
-    "frame-src https://www.googletagmanager.com",
+    "frame-src https://www.googletagmanager.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
     "frame-ancestors 'none'",
   ].join("; "),
 };
@@ -33,11 +33,23 @@ const JSON_H = {
   ...SECURITY_HEADERS,
 };
 
+const CACHE_H = {
+  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+};
+
 let dbReady = false;
 async function ensureDB(db) {
   if (dbReady) return;
   await initDB(db);
   dbReady = true;
+}
+
+// ── HTML escape for Worker-rendered pages ────────────────────────────────────
+function esc(s = "") {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // ── Add security headers to any response ─────────────────────────────────────
@@ -64,6 +76,70 @@ export default {
     // Block unwanted methods globally
     if (!["GET", "POST", "OPTIONS"].includes(request.method)) {
       return new Response("Method Not Allowed", { status: 405, headers: SECURITY_HEADERS });
+    }
+
+    // ── Sitemap ──────────────────────────────────────────────────────────────
+    if (path === "/sitemap.xml" && request.method === "GET") {
+      const now = new Date().toISOString().slice(0, 10);
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.the-alien.net/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <lastmod>${now}</lastmod>
+  </url>
+  <url>
+    <loc>https://www.the-alien.net/privacy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>`;
+      return new Response(xml, {
+        headers: {
+          "Content-Type": "application/xml; charset=UTF-8",
+          "Cache-Control": "public, max-age=86400",
+          ...SECURITY_HEADERS,
+        },
+      });
+    }
+
+    // ── Article share pages: /article/:id ────────────────────────────────────
+    if (path.startsWith("/article/") && request.method === "GET") {
+      const id = safeInt(path.split("/")[2], 0, 1, 9_999_999);
+      if (!id) return Response.redirect("https://www.the-alien.net/", 302);
+      try {
+        const article = await env.DB
+          .prepare("SELECT id, title, summary, image_url FROM articles WHERE id = ?")
+          .bind(id).first();
+        if (!article) return Response.redirect("https://www.the-alien.net/", 302);
+        const title  = esc(article.title  || "AlienSignal — UFO & Alien News");
+        const desc   = esc((article.summary || "").substring(0, 200));
+        const imgUrl = esc(article.image_url || "https://www.the-alien.net/img/og.svg");
+        const pageUrl = `https://www.the-alien.net/article/${id}`;
+        const html = `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${title} — AlienSignal</title>
+<meta name="description" content="${desc}"/>
+<link rel="canonical" href="${pageUrl}"/>
+<meta property="og:type" content="article"/>
+<meta property="og:site_name" content="AlienSignal"/>
+<meta property="og:title" content="${title}"/>
+<meta property="og:description" content="${desc}"/>
+<meta property="og:image" content="${imgUrl}"/>
+<meta property="og:url" content="${pageUrl}"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="${title}"/>
+<meta name="twitter:description" content="${desc}"/>
+<meta name="twitter:image" content="${imgUrl}"/>
+<meta http-equiv="refresh" content="0;url=https://www.the-alien.net/?article=${id}"/>
+<style>body{margin:0;background:#020409;color:#e8f4ff;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}a{color:#00ffaa}</style>
+</head><body><p>Loading signal… <a href="https://www.the-alien.net/?article=${id}">Click here if not redirected</a></p></body></html>`;
+        return new Response(html, {
+          headers: { "Content-Type": "text/html; charset=UTF-8", "Cache-Control": "public, max-age=3600", ...SECURITY_HEADERS },
+        });
+      } catch { return Response.redirect("https://www.the-alien.net/", 302); }
     }
 
     if (path.startsWith("/api/")) {
@@ -96,7 +172,7 @@ async function handleAPI(request, env, path, url) {
       const page    = safeInt(url.searchParams.get("page"), 1, 1, 1000);
       const perPage = safeInt(url.searchParams.get("per_page"), 12, 6, 24);
       const data    = await getArticles(env.DB, page, perPage);
-      return Response.json(data, { headers: JSON_H });
+      return Response.json(data, { headers: { ...JSON_H, ...CACHE_H } });
     }
 
     // GET /api/status
@@ -108,7 +184,7 @@ async function handleAPI(request, env, path, url) {
       ]);
       return Response.json(
         { last_scrape: lastScrape, total_articles: articlesData.total, total_visits: totalVisits },
-        { headers: JSON_H }
+        { headers: { ...JSON_H, ...CACHE_H } }
       );
     }
 
