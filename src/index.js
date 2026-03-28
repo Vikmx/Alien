@@ -5,34 +5,45 @@
  *  - HTTP routes  : /api/articles, /api/status, /api/scrape (POST)
  *  - Static assets: served from ./public via ASSETS binding
  *  - Cron trigger : runs scraper every 3 days
+ *  - Auto-init    : creates D1 tables on first request (no manual migration needed)
  */
 
 import { fetchAllFeeds } from "./scraper.js";
-import { saveArticles, logScrape, getArticles, getLastScrape } from "./db.js";
+import { initDB, saveArticles, logScrape, getArticles, getLastScrape } from "./db.js";
 
 const JSON_HEADERS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
 };
 
+// Runs once per Worker instance lifetime
+let dbReady = false;
+
+async function ensureDB(db) {
+  if (dbReady) return;
+  await initDB(db);
+  dbReady = true;
+}
+
 // ── HTTP handler ─────────────────────────────────────────────────────────────
 
 export default {
   async fetch(request, env) {
+    await ensureDB(env.DB);
+
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // API routes
     if (path.startsWith("/api/")) {
       return handleAPI(request, env, path, url);
     }
 
-    // Static assets (HTML, CSS, JS)
     return env.ASSETS.fetch(request);
   },
 
   // ── Cron trigger (every 3 days) ────────────────────────────────────────────
   async scheduled(_event, env, ctx) {
+    await ensureDB(env.DB);
     ctx.waitUntil(runScrape(env));
   },
 };
@@ -45,7 +56,6 @@ async function handleAPI(request, env, path, url) {
   }
 
   try {
-    // GET /api/articles?page=1&per_page=12
     if (path === "/api/articles" && request.method === "GET") {
       const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
       const perPage = Math.min(24, Math.max(6, parseInt(url.searchParams.get("per_page") || "12")));
@@ -53,7 +63,6 @@ async function handleAPI(request, env, path, url) {
       return Response.json(data, { headers: JSON_HEADERS });
     }
 
-    // GET /api/status
     if (path === "/api/status" && request.method === "GET") {
       const [lastScrape, articlesData] = await Promise.all([
         getLastScrape(env.DB),
@@ -65,7 +74,6 @@ async function handleAPI(request, env, path, url) {
       );
     }
 
-    // POST /api/scrape  — manual trigger
     if (path === "/api/scrape" && request.method === "POST") {
       await runScrape(env);
       return Response.json({ status: "ok", message: "Scrape triggered" }, { headers: JSON_HEADERS });
@@ -89,6 +97,6 @@ async function runScrape(env) {
     console.log(`Scrape complete – ${inserted} new articles saved.`);
   } catch (err) {
     console.error("Scrape failed:", err);
-    await logScrape(env.DB, 0, `error: ${err.message}`);
+    try { await logScrape(env.DB, 0, `error: ${err.message}`); } catch { /* ignore */ }
   }
 }
