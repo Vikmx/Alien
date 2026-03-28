@@ -1,0 +1,19 @@
+name = "alien-signal"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Static assets (HTML, CSS, JS)
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# D1 database (SQLite at the edge)
+[[d1_databases]]
+binding = "DB"
+database_name = "alien-signal-db"
+database_id = "YOUR_D1_DATABASE_ID"  # Replace after: wrangler d1 create alien-signal-db
+
+# Cron trigger: run scraper every 3 days (midnight UTC, day 1/4/7/10/...)
+[triggers]
+crons = ["0 0 1,4,7,10,13,16,19,22,25,28,31 * *"]
