@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alien Signal – Latest UFO &amp; Alien News</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👽</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- Stars background -->
+  <div class="stars" id="stars"></div>
+  <div class="stars2"></div>
+  <div class="stars3"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">👽</span>
+        <span class="logo-text">ALIEN<span class="logo-accent">SIGNAL</span></span>
+      </div>
+      <div class="header-meta">
+        <span class="status-badge" id="statusBadge">
+          <span class="pulse-dot"></span>
+          <span id="statusText">Scanning…</span>
+        </span>
+        <button class="scan-btn" id="scanBtn" title="Trigger manual scan">
+          ⟳ Scan Now
+        </button>
+      </div>
+    </div>
+    <p class="tagline">Intercepting transmissions from across the universe — updated every 3 days</p>
+  </header>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat">
+        <span class="stat-label">Total Signals</span>
+        <span class="stat-value" id="totalArticles">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Last Scan</span>
+        <span class="stat-value" id="lastScan">—</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Next Scan</span>
+        <span class="stat-value" id="nextScan">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Loading state -->
+    <div class="loading" id="loading">
+      <div class="ufo-loader">
+        <div class="ufo-body">🛸</div>
+        <div class="beam"></div>
+      </div>
+      <p>Intercepting transmissions…</p>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-icon">🌌</div>
+      <h2>No signals detected yet</h2>
+      <p>The scanner is warming up. Try triggering a manual scan.</p>
+      <button class="scan-btn large" onclick="triggerScan()">⟳ Start Scanning</button>
+    </div>
+
+    <!-- Articles grid -->
+    <div class="articles-grid" id="articlesGrid"></div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      👽 AlienSignal — Aggregating alien &amp; UFO news from across the web.<br />
+      <small>All articles link to their original sources. Updated every 3 days automatically.</small>
+    </p>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>
