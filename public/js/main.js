@@ -92,6 +92,15 @@ function esc(s = "") {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
                   .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
+
+/** Strip any HTML/entity-encoded tags that leaked from RSS feeds. */
+function clean(s = "") {
+  return String(s)
+    .replace(/&lt;[^&]*&gt;/g, "")   // encoded tags: &lt;a href=...&gt;
+    .replace(/<[^>]*>/g, "")          // real tags
+    .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ").trim();
+}
 function fmtDate(iso) {
   if (!iso) return "";
   try { return new Date(iso).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
@@ -257,8 +266,8 @@ function heroHTML(a) {
       <div class="ha-body">
         <div>
           <div class="ha-badge">📡 ${esc(a.source||"Signal")}</div>
-          <h2 class="ha-title">${esc(a.title)}</h2>
-          ${a.summary ? `<p class="ha-summary" style="margin-top:.7rem">${esc(a.summary)}</p>` : ""}
+          <h2 class="ha-title">${esc(clean(a.title))}</h2>
+          ${a.summary ? `<p class="ha-summary" style="margin-top:.7rem">${esc(clean(a.summary))}</p>` : ""}
         </div>
         <div class="ha-foot">
           <span class="ha-meta">Via <strong>${esc(a.source||"Unknown")}</strong> · ${fmtDate(a.published_at)}</span>
@@ -280,8 +289,8 @@ function cardHTML(a, i) {
   return `${img}
     <div class="c-body">
       <span class="c-src">${esc(a.source||"Unknown")}</span>
-      <h3 class="c-title">${esc(a.title)}</h3>
-      ${a.summary ? `<p class="c-summary">${esc(a.summary)}</p>` : ""}
+      <h3 class="c-title">${esc(clean(a.title))}</h3>
+      ${a.summary ? `<p class="c-summary">${esc(clean(a.summary))}</p>` : ""}
       <div class="c-foot">
         <span class="c-date">${fmtDate(a.published_at)}</span>
         <a class="c-link" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">

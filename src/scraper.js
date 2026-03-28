@@ -38,6 +38,28 @@ const RSS_FEEDS = [
     url: "https://www.space.com/feeds/all",
     filterByKeywords: true,
   },
+  {
+    name: "Google News – Area 51",
+    url: "https://news.google.com/rss/search?q=area+51+roswell+alien&hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    name: "Google News – UAP Congress",
+    url: "https://news.google.com/rss/search?q=UAP+congress+non-human+intelligence&hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    name: "Google News – Alien Life",
+    url: "https://news.google.com/rss/search?q=alien+life+discovered+space&hl=en-US&gl=US&ceid=US:en",
+  },
+  {
+    name: "Live Science",
+    url: "https://www.livescience.com/feeds/all",
+    filterByKeywords: true,
+  },
+  {
+    name: "Sky News – Space",
+    url: "https://feeds.skynews.com/feeds/rss/science.xml",
+    filterByKeywords: true,
+  },
 ];
 
 const ALIEN_KEYWORDS = [
